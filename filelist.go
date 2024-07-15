@@ -1,26 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"log"
-	"os"
 )
-
-func readFile(filePath string) ([]string, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	var lines []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-
-	return lines, scanner.Err()
-}
 
 func makeFileVals(cMakeListsConfigs map[string][]string, findKey string) []string {
 	var result []string = []string{}
@@ -29,9 +11,9 @@ func makeFileVals(cMakeListsConfigs map[string][]string, findKey string) []strin
 			result = append(result, values...)
 		}
 	}
-	if len(result) > 0 {
-		log.Printf("    找到 %s : %s", findKey, result)
-	}
+	// if len(result) > 0 {
+	// log.Printf("找到 %s : %s", findKey, result)
+	// }
 	return result
 }
 
@@ -40,8 +22,9 @@ func loadCMakeLists(path string) {
 	data, err := readFile(path)
 	if err != nil || len(data) == 0 {
 		log.Println("错误：无法读取文件 ", path, err)
+		return
 	}
-	var cMakeListsConfigs map[string][]string = ParseCMakeLists(data)
+	var cMakeListsConfigs map[string][]string = parseCMakeLists(data)
 	// log.Println("CMakeList set 列表: ", cMakeListsConfigs)
 
 	/* 在 CMakeLists.txt 檔案中，SDKCONFIG_DEFAULTS 變數用於指定一個或多個預設的 SDK 配置檔案。這些檔案包含了一些預設的配置選項，用於初始化 SDK 的配置。這些配置選項通常是在 sdkconfig 檔案中定義的，用於控制編譯時的一些行為和設定。 */
@@ -49,6 +32,16 @@ func loadCMakeLists(path string) {
 	if len(d_SDKCONFIG_DEFAULTS) > 0 {
 		/* 內容是一個個 .defaults 檔案。
 		讀取裡面指定的每個 .defaults 檔案。 */
+		fileList, err := listFilesMatchingPattern(cMakeListsDir, "*.defaults")
+		if err != nil {
+			log.Println("错误：无法读取文件夹 ", cMakeListsDir, err)
+			return
+		}
+		log.Println("进入文件夹:", cMakeListsDir)
+		for i, file := range fileList {
+			log.Println("正在处理文件", i+1, ":", file)
+			loadDefaultsFile(file)
+		}
 	}
 	/* EXTRA_COMPONENT_DIRS 是在 CMakeLists.txt 檔案中用於指定額外元件目錄的變數。ESP-IDF 專案通常由多個元件組成，這些元件包含在 components 目錄中。預設情況下，CMake 會自動在專案根目錄的 components 目錄中搜索元件。但如果你的元件不在預設的 components 目錄中，或者你有額外的元件目錄，你可以使用 EXTRA_COMPONENT_DIRS 來指定這些目錄。 */
 	var d_EXTRA_COMPONENT_DIRS []string = makeFileVals(cMakeListsConfigs, "EXTRA_COMPONENT_DIRS")

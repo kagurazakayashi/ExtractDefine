@@ -4,14 +4,6 @@ import (
 	"strings"
 )
 
-// `#.*$`
-func removeComments(line string) string {
-	if index := strings.Index(line, "#"); index != -1 {
-		return line[:index]
-	}
-	return line
-}
-
 // `^\s*set\s*\(\s*(\w+)\s*(.*?)\s*\)\s*$`
 func parseSingleLineSet(line string) (string, []string, bool) {
 	line = strings.TrimSpace(line)
@@ -74,14 +66,14 @@ func isMultiLineSetEnd(line string) bool {
 	return line == ")"
 }
 
-func ParseCMakeLists(lines []string) map[string][]string {
+func parseCMakeLists(lines []string) map[string][]string {
 	result := make(map[string][]string)
 	var currentKey string
 	var currentValues []string
 
 	for _, line := range lines {
 		// 刪除註釋並修剪空格
-		line = removeComments(line)
+		line = removeComments(line, "#")
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue

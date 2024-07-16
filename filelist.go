@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+	"os"
+	"path/filepath"
 )
 
 func makeFileVals(cMakeListsConfigs map[string][]string, findKey string) []string {
@@ -24,6 +26,7 @@ func loadCMakeLists(path string) {
 		log.Println("错误：无法读取文件 ", path, err)
 		return
 	}
+	var dir string = filepath.Dir(path)
 	var cMakeListsConfigs map[string][]string = parseCMakeLists(data)
 	// log.Println("CMakeList set 列表: ", cMakeListsConfigs)
 
@@ -32,12 +35,12 @@ func loadCMakeLists(path string) {
 	if len(d_SDKCONFIG_DEFAULTS) > 0 {
 		/* 內容是一個個 .defaults 檔案。
 		讀取裡面指定的每個 .defaults 檔案。 */
-		fileList, err := listFilesMatchingPattern(cMakeListsDir, "*.defaults")
+		fileList, err := listFilesMatchingPattern(dir, "*.defaults")
 		if err != nil {
-			log.Println("错误：无法读取文件夹 ", cMakeListsDir, err)
+			log.Println("错误：无法读取文件夹 ", dir, err)
 			return
 		}
-		log.Println("进入文件夹:", cMakeListsDir)
+		log.Println("进入文件夹:", dir)
 		for i, file := range fileList {
 			log.Println("正在处理文件", i+1, ":", file)
 			loadDefaultsFile(file)
@@ -48,6 +51,15 @@ func loadCMakeLists(path string) {
 	if len(d_EXTRA_COMPONENT_DIRS) > 0 {
 		/* 內容是一個個資料夾路徑。
 		遍歷資料夾，包括子資料夾。直到找出哪層還有 CMakeLists.txt ，處理這層的 CMakeLists.txt 。 */
+		for _, dir := range d_EXTRA_COMPONENT_DIRS {
+			var dirList []string = findCMakeLists(dir)
+			if len(dirList) == 0 {
+				continue
+			}
+			for _, nowDir := range dirList {
+				loadCMakeLists(nowDir)
+			}
+		}
 	}
 	/* 在 CMakeLists.txt 檔案中，include 命令用於包含其他 CMake 指令碼檔案。這些檔案通常包含額外的設定、宏定義、函式定義等，可以在你的 CMake 構建過程中使用。透過包含其他檔案，你可以將 CMake 配置分成多個部分，使其更易於管理和維護。 */
 	var d_includes []string = makeFileVals(cMakeListsConfigs, "includes")
@@ -65,4 +77,31 @@ func loadCMakeLists(path string) {
 
 func makeFileList() {
 	loadCMakeLists(cMakeListsPath)
+}
+
+func findCMakeLists(root string) []string {
+	var cmakeFiles []string = []string{}
+
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Println("错误：无法读取文件夹 ", root, err)
+			return err
+		}
+		if !info.IsDir() && info.Name() == "CMakeLists.txt" {
+			absPath, err := filepath.Abs(path)
+			if err != nil {
+				log.Println("错误：无法读取文件 ", path, err)
+				return err
+			}
+			cmakeFiles = append(cmakeFiles, absPath)
+		}
+		return nil
+	})
+
+	if err != nil {
+		log.Println("错误：无法读取文件夹 ", root, err)
+		return []string{}
+	}
+
+	return cmakeFiles
 }

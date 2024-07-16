@@ -33,6 +33,6 @@ func parseDefaults(lines []string) {
 		} else if kvLen == 2 {
 			modeStr = macroDicAddStr(kv[0], kv[1])
 		}
-		log.Printf("在行 %d %s %s , 值为 %s (已存储 %d)\n", i, modeStr, kv[0], macroDic[kv[0]], len(macroDic))
+		log.Printf("从行 %d %s定义 %s , 值为 %s (已存储 %d)\n", i, modeStr, kv[0], macroDic[kv[0]], len(macroDic))
 	}
 }

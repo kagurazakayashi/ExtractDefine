@@ -10,8 +10,8 @@ func macroDicAdd(key string, value string) bool {
 
 func macroDicAddStr(key string, value string) string {
 	if macroDicAdd(key, value) {
-		return "覆盖(!)定义"
+		return "覆盖(!)"
 	} else {
-		return "新增定义"
+		return "新增"
 	}
 }

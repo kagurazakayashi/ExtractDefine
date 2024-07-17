@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func makeFileVals(cMakeListsConfigs map[string][]string, findKey string) []string {
@@ -20,7 +21,9 @@ func makeFileVals(cMakeListsConfigs map[string][]string, findKey string) []strin
 }
 
 func loadCMakeLists(path string) {
-	log.Println("加载 CMakeList :", path)
+	if detailed {
+		log.Println("加载 CMakeList :", path)
+	}
 	data, err := readFile(path)
 	if err != nil || len(data) == 0 {
 		log.Println("错误：无法读取文件 ", path, err)
@@ -40,9 +43,15 @@ func loadCMakeLists(path string) {
 			log.Println("错误：无法读取文件夹 ", dir, err)
 			return
 		}
-		log.Println("进入文件夹:", dir)
+		if detailed {
+			if detailed {
+				log.Println("进入文件夹:", dir)
+			}
+		}
 		for i, file := range fileList {
-			log.Println("正在处理文件", i+1, ":", file)
+			if detailed {
+				log.Println("分析文件", i+1, ":", file)
+			}
 			loadDefaultsFile(file)
 		}
 	}
@@ -51,8 +60,12 @@ func loadCMakeLists(path string) {
 	if len(d_EXTRA_COMPONENT_DIRS) > 0 {
 		/* 內容是一個個資料夾路徑。
 		遍歷資料夾，包括子資料夾。直到找出哪層還有 CMakeLists.txt ，處理這層的 CMakeLists.txt 。 */
-		for _, dir := range d_EXTRA_COMPONENT_DIRS {
-			var dirList []string = findCMakeLists(dir)
+		for _, sub := range d_EXTRA_COMPONENT_DIRS {
+			if sub == "." || sub == ".." {
+				continue
+			}
+			sub = completeFilePath(dir, sub)
+			var dirList []string = findCMakeLists(sub)
 			if len(dirList) == 0 {
 				continue
 			}
@@ -66,12 +79,43 @@ func loadCMakeLists(path string) {
 	if len(d_includes) > 0 {
 		/* 內容是一個個資料夾路徑，這些資料夾裡面是 .h 檔案。
 		从这些文件中提取宏定义。 */
+		for i, sub := range d_includes {
+			sub = strings.TrimSpace(sub)
+			if sub == "." || sub == ".." {
+				continue
+			}
+			sub = completeFilePath(dir, sub)
+			fileList, err := listFilesMatchingPattern(sub, "*.h")
+			if err != nil {
+				log.Println("错误：无法读取文件夹 ", sub, err)
+				return
+			}
+			if detailed {
+				log.Println("进入文件夹", i+1, ":", sub)
+			}
+			for i, file := range fileList {
+				if detailed {
+					log.Println("分析文件A", i+1, ":", file)
+				}
+				loadHCFile(file)
+			}
+		}
 	}
 	/* 在 CMakeLists.txt 檔案中，SRCS 變數用於指定專案中要編譯的原始檔列表。透過定義 SRCS 變數，CMake 可以知道哪些原始檔需要包含在編譯過程中。 */
 	var d_srcs []string = makeFileVals(cMakeListsConfigs, "srcs")
 	if len(d_srcs) > 0 {
 		/* 內容是一個個 .c 檔案。
 		從這些檔案中提取宏定義。 */
+		for i, sub := range d_srcs {
+			sub = strings.TrimSpace(sub)
+			sub = completeFilePath(dir, sub)
+			if strings.HasSuffix(sub, ".c") {
+				if detailed {
+					log.Println("分析文件B", i+1, ":", sub)
+				}
+				loadHCFile(sub)
+			}
+		}
 	}
 }
 
@@ -88,6 +132,7 @@ func findCMakeLists(root string) []string {
 			return err
 		}
 		if !info.IsDir() && info.Name() == "CMakeLists.txt" {
+			path = strings.TrimSpace(path)
 			absPath, err := filepath.Abs(path)
 			if err != nil {
 				log.Println("错误：无法读取文件 ", path, err)

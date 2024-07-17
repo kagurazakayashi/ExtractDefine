@@ -17,8 +17,8 @@ func loadDefaultsFile(path string) {
 func parseDefaults(lines []string) {
 	// macroDic
 	for i, line := range lines {
-		line = removeComments(line, "#")
 		line = strings.TrimSpace(line)
+		line = removeComments(line, "#")
 		if line == "" {
 			continue
 		}
@@ -33,6 +33,8 @@ func parseDefaults(lines []string) {
 		} else if kvLen == 2 {
 			modeStr = macroDicAddStr(kv[0], kv[1])
 		}
-		log.Printf("从行 %d %s定义 %s , 值为 %s (已存储 %d)\n", i, modeStr, kv[0], macroDic[kv[0]], len(macroDic))
+		if detailed {
+			log.Printf("从行 %d %s定义 %s , 值为 %s (已存储 %d)\n", i, modeStr, kv[0], macroDic[kv[0]], len(macroDic))
+		}
 	}
 }

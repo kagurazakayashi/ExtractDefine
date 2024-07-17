@@ -1,3 +1,6 @@
+*.log
+/ExtractDefine
+
 # Created by https://www.toptal.com/developers/gitignore/api/windows,macos,linux,go,visualstudiocode,goland
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,macos,linux,go,visualstudiocode,goland
 

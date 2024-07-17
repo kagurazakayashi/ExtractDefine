@@ -15,3 +15,8 @@ func macroDicAddStr(key string, value string) string {
 		return "新增"
 	}
 }
+
+func macroDicKeyExists(key string) bool {
+	_, exists := macroDic[key]
+	return exists
+}

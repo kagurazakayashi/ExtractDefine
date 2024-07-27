@@ -5,10 +5,10 @@ import (
 )
 
 // `^\s*set\s*\(\s*(\w+)\s*(.*?)\s*\)\s*$`
-func parseSingleLineSet(line string) (string, []string, bool) {
+func parseSingleLineSet(line string, key string) (string, []string, bool) {
 	line = strings.TrimSpace(line)
-	if strings.HasPrefix(line, "set(") && strings.HasSuffix(line, ")") {
-		content := strings.TrimSuffix(strings.TrimPrefix(line, "set("), ")")
+	if strings.HasPrefix(line, key+"(") && strings.HasSuffix(line, ")") {
+		content := strings.TrimSuffix(strings.TrimPrefix(line, key+"("), ")")
 		parts := strings.Fields(content)
 		if len(parts) > 1 {
 			key := parts[0]
@@ -21,7 +21,7 @@ func parseSingleLineSet(line string) (string, []string, bool) {
 	}
 
 	// 處理“set”和“(”之間存在空格的情況
-	if strings.HasPrefix(line, "set ") {
+	if strings.HasPrefix(line, key+" ") {
 		index := strings.Index(line, "(")
 		if index != -1 && strings.HasSuffix(line, ")") {
 			content := strings.TrimSuffix(strings.TrimSpace(line[index+1:]), ")")
@@ -41,15 +41,15 @@ func parseSingleLineSet(line string) (string, []string, bool) {
 }
 
 // `^\s*set\s*\(\s*(\w+)\s*$`
-func isMultiLineSetStart(line string) (string, bool) {
+func isMultiLineSetStart(line string, key string) (string, bool) {
 	line = strings.TrimSpace(line)
-	if strings.HasPrefix(line, "set(") && !strings.HasSuffix(line, ")") {
-		content := strings.TrimPrefix(line, "set(")
+	if strings.HasPrefix(line, key+"(") && !strings.HasSuffix(line, ")") {
+		content := strings.TrimPrefix(line, key+"(")
 		return strings.TrimSpace(content), true
 	}
 
 	// 處理“set”和“(”之間存在空格的情況
-	if strings.HasPrefix(line, "set ") {
+	if strings.HasPrefix(line, key+" ") {
 		index := strings.Index(line, "(")
 		if index != -1 && !strings.HasSuffix(line, ")") {
 			content := strings.TrimSpace(line[index+1:])
@@ -80,13 +80,20 @@ func parseCMakeLists(lines []string) map[string][]string {
 		}
 
 		// 處理單行 set 語句
-		if key, values, matched := parseSingleLineSet(line); matched {
+		if key, values, matched := parseSingleLineSet(line, "set"); matched {
+			result[key] = values
+			continue
+		}
+		if key, values, matched := parseSingleLineSet(line, "idf_component_register"); matched {
 			result[key] = values
 			continue
 		}
 
 		// 處理多行 set 語句
-		if key, matched := isMultiLineSetStart(line); matched {
+		if key, matched := isMultiLineSetStart(line, "set"); matched {
+			currentKey = key
+			currentValues = []string{}
+		} else if key, matched := isMultiLineSetStart(line, "idf_component_register"); matched {
 			currentKey = key
 			currentValues = []string{}
 		} else if isMultiLineSetEnd(line) {

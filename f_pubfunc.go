@@ -65,20 +65,32 @@ func removeCommentsC(lines []string) []string {
 }
 
 // 列出指定資料夾中符合萬用字元模式的所有檔案的絕對路徑
-func listFilesMatchingPattern(folderPath, pattern string) ([]string, error) {
+func listFilesMatchingPattern(folderPath, patterns string) ([]string, error) {
 	var matches []string
-	// 獲取資料夾的絕對路徑
+
+	// 获取文件夹的绝对路径
 	absFolderPath, err := filepath.Abs(folderPath)
 	if err != nil {
 		return nil, err
 	}
-	// 構建搜尋模式
-	searchPattern := filepath.Join(absFolderPath, pattern)
-	// 使用 Glob 函式匹配檔案
-	matches, err = filepath.Glob(searchPattern)
-	if err != nil {
-		return nil, err
+
+	// 分割模式字符串
+	patternList := strings.Split(patterns, ",")
+
+	// 对每个模式进行匹配
+	for _, pattern := range patternList {
+		// 去掉两端空格
+		pattern = strings.TrimSpace(pattern)
+		// 构建搜索模式
+		searchPattern := filepath.Join(absFolderPath, pattern)
+		// 使用 Glob 函数匹配文件
+		patternMatches, err := filepath.Glob(searchPattern)
+		if err != nil {
+			return nil, err
+		}
+		matches = append(matches, patternMatches...)
 	}
+
 	return matches, nil
 }
 

@@ -8,7 +8,7 @@ import (
 func loadDefaultsFile(path string) {
 	data, err := readFile(path)
 	if err != nil || len(data) == 0 {
-		log.Println("错误：无法读取文件 ", path, err)
+		log.Println("错误：无法读取文件 ", err)
 		return
 	}
 	parseDefaults(data)

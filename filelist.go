@@ -37,19 +37,12 @@ func loadCMakeLists(path string) {
 	var d_SDKCONFIG_DEFAULTS []string = makeFileVals(cMakeListsConfigs, "SDKCONFIG_DEFAULTS")
 	if len(d_SDKCONFIG_DEFAULTS) > 0 {
 		log.Println("处理配置项: SDKCONFIG_DEFAULTS 在", path)
-		/* 內容是一個個 .defaults 檔案。
-		讀取裡面指定的每個 .defaults 檔案。 */
-		fileList, err := listFilesMatchingPattern(dir, "*.defaults")
-		if err != nil {
-			log.Println("错误：无法读取文件夹 ", err)
-			return
-		}
-		if detailed {
-			if detailed {
-				log.Println("进入文件夹:", dir)
+		/* 内容是一个个文件路径 */
+		for i, file := range d_SDKCONFIG_DEFAULTS {
+			if file == "." || file == ".." {
+				continue
 			}
-		}
-		for i, file := range fileList {
+			file = completeFilePath(dir, file)
 			if detailed {
 				log.Println("分析文件", i+1, ":", file)
 			}

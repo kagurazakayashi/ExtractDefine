@@ -19,14 +19,12 @@ func parseHC(lines []string) {
 	// #define CFG_WEB_NET_IPV6 // 支持IPv6
 	// #endif
 	var ifName string = ""
-	var canSave bool = true
+	var noSave string = ""
+	const endif string = "#endif"
 	lines = removeCommentsC(lines)
 	for i, line := range lines {
 		line = strings.TrimSpace(line)
 		if strings.HasPrefix(line, "#define") {
-			if !canSave {
-				continue
-			}
 			var spaceIndex int = strings.Index(line, " ")
 			if spaceIndex < 0 {
 				continue
@@ -38,6 +36,13 @@ func parseHC(lines []string) {
 				continue
 			}
 			var modeStr string = ""
+			if len(noSave) > 0 {
+				if detailed && noSave != endif {
+					log.Printf("忽略行 %d 定义 %s , 值为 %s (因为不满足 %s )\n", i, kv[0], macroDic[kv[0]], noSave)
+				}
+				noSave = ""
+				continue
+			}
 			if kvLen == 1 {
 				modeStr = macroDicAddStr(kv[0], "")
 			} else if kvLen == 2 {
@@ -59,14 +64,14 @@ func parseHC(lines []string) {
 				}
 				ifName = ka[1][:len(ka[1])-1]
 				if macroDicKeyExists(ifName) {
-					canSave = true
+					noSave = ""
 				} else {
-					canSave = false
+					noSave = ifName
 					ifName = ""
 				}
 			}
-		} else if strings.HasPrefix(line, "#endif") {
-			canSave = true
+		} else if strings.HasPrefix(line, endif) {
+			noSave = endif
 			ifName = ""
 		}
 	}

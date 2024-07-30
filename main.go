@@ -27,7 +27,7 @@ func main() {
 	cMakeListsDir = filepath.Dir(cMakeListsPath)
 	log.Println("工程文件夹: ", cMakeListsDir)
 	makeFileList()
-	log.Println("解析完毕，定义列表:")
+	log.Printf("解析完毕，定义列表 (%d) :", len(macroDic))
 	// var maxNumLen int = len(strconv.Itoa(len(macroDic)))
 	// var i int = 0
 	for k, v := range macroDic {

@@ -15,9 +15,6 @@ func loadHCFile(path string) {
 }
 
 func parseHC(lines []string) {
-	// #if defined(CONFIG_EXAMPLE_CONNECT_IPV6)
-	// #define CFG_WEB_NET_IPV6 // 支持IPv6
-	// #endif
 	var ifName string = ""
 	var noSave string = ""
 	const endif string = "#endif"
@@ -58,16 +55,59 @@ func parseHC(lines []string) {
 			}
 			line = line[spaceIndex+1:]
 			if strings.HasPrefix(line, "defined") {
-				var ka []string = strings.Split(line, "(")
-				if len(ka) != 2 {
-					continue
-				}
-				ifName = ka[1][:len(ka[1])-1]
-				if macroDicKeyExists(ifName) {
-					noSave = ""
+				var isExists int8 = -1
+				if strings.HasPrefix(line, "||") {
+					// ||
+					var or []string = strings.Split(line, " || ")
+					for _, orDef := range or {
+						var ka []string = strings.Split(orDef, "(")
+						if len(ka) != 2 {
+							break
+						}
+						ifName = ka[1][:len(ka[1])-1]
+						if macroDicKeyExists(ifName) {
+							isExists = 1
+							break
+						} else {
+							isExists = 0
+						}
+					}
+				} else if strings.HasPrefix(line, "&&") {
+					// &&
+					var and []string = strings.Split(line, " && ")
+					for _, andDef := range and {
+						var ka []string = strings.Split(andDef, "(")
+						if len(ka) != 2 {
+							break
+						}
+						ifName = ka[1][:len(ka[1])-1]
+						if macroDicKeyExists(ifName) {
+							isExists = 1
+						} else {
+							isExists = 0
+							break
+						}
+					}
+					// TODO: 找 ) 而不是直接 -1
 				} else {
+					var ka []string = strings.Split(line, "(")
+					if len(ka) != 2 {
+						continue
+					}
+					ifName = ka[1][:len(ka[1])-1]
+					if macroDicKeyExists(ifName) {
+						isExists = 1
+					} else {
+						isExists = 0
+					}
+				}
+				if isExists == 1 {
+					noSave = ""
+				} else if isExists == 0 {
 					noSave = ifName
 					ifName = ""
+				} else {
+					continue
 				}
 			}
 		} else if strings.HasPrefix(line, endif) {

@@ -27,6 +27,15 @@ func macroDicAddStr(key string, value string) string {
 	}
 }
 
+func macroDicRemove(key string) string {
+	val, exists := macroDic[key]
+	if exists {
+		delete(macroDic, key)
+		return val
+	}
+	return ""
+}
+
 func macroDicKeyExists(key string) bool {
 	_, exists := macroDic[key]
 	return exists

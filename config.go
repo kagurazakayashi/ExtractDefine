@@ -35,7 +35,9 @@ func loadConfigFile() (Config, error) {
 
 		// 檢查配置文件是否存在
 		if fileExists(configFile) {
-			log.Printf("读取配置文件: %s\n", configFile)
+			if detailed {
+				log.Printf("读取配置文件: %s\n", configFile)
+			}
 			// 讀取配置文件內容
 			cfg, err := os.ReadFile(configFile)
 			if err != nil {

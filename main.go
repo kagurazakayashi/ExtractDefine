@@ -19,9 +19,6 @@ var (
 )
 
 func main() {
-	// 日誌輸出初始化訊息
-	log.Println("宏定義提取工具")
-
 	// 定義並解析命令行參數
 	// -c 參數：指定配置文件 (.yaml, 會覆蓋命令行參數)。
 	flag.StringVar(&configFile, "c", "", "指定一个配置文件 (.yaml 格式, 会覆盖命令行参数)。")
@@ -49,26 +46,58 @@ func main() {
 		return
 	}
 
+	if detailed {
+		log.Println("C项目生效宏定义提取工具")
+	}
+
 	// 檢查指定的 CMakeLists.txt 文件是否存在，如果不存在則輸出錯誤訊息並退出程序
 	if !fileExists(cMakeListsPath) {
-		log.Fatalf("错误: 指定的 CMakeLists.txt 文件不存在: %s", cMakeListsPath)
+		log.Println("错误: 指定的 CMakeLists.txt 文件不存在:", cMakeListsPath)
 		return
 	}
 
 	// 取得 CMakeLists.txt 文件所在的資料夾路徑
 	cMakeListsDir = filepath.Dir(cMakeListsPath)
 	// 日誌輸出工程文件夾路徑
-	log.Println("工程文件夹: ", cMakeListsDir)
+	if detailed {
+		log.Println("工程文件夹: ", cMakeListsDir)
+	}
 
 	// 生成要解析的文件列表並開始解析
 	makeFileList()
 
+	// 過濾器
+	var useFilter bool = len(filter) > 0
+	var numView string = ""
+	var filterDic []string = []string{}
+	if useFilter {
+		for k, v := range macroDic {
+			for _, f := range filter {
+				if k == f {
+					filterDic = append(filterDic, fmt.Sprintf("%s=%s", k, v))
+					break
+				}
+			}
+		}
+		numView = fmt.Sprintf("%d / %d", len(filterDic), len(macroDic))
+	} else {
+		numView = fmt.Sprintf("%d", len(macroDic))
+	}
+
 	// 解析完成後，輸出解析到的宏定義的數量
-	log.Printf("解析完毕，定义列表 (%d) :", len(macroDic))
+	if detailed {
+		log.Printf("解析完毕，定义列表 ( %s ):\n", numView)
+	}
 
 	// 遍歷並輸出所有解析到的宏定義及其對應的值
-	for k, v := range macroDic {
-		fmt.Printf("%s=%s\n", k, v)
+	if useFilter {
+		for _, v := range filterDic {
+			fmt.Println(v)
+		}
+	} else {
+		for k, v := range macroDic {
+			fmt.Printf("%s=%s\n", k, v)
+		}
 	}
 }
 

@@ -54,7 +54,9 @@ func loadCMakeLists(path string) {
 	// SDKCONFIG_DEFAULTS 用於指定預設的 SDK 配置檔案。
 	var d_SDKCONFIG_DEFAULTS []string = makeFileVals(cMakeListsConfigs, "SDKCONFIG_DEFAULTS")
 	if len(d_SDKCONFIG_DEFAULTS) > 0 {
-		log.Println("处理配置项: SDKCONFIG_DEFAULTS 在", path)
+		if detailed {
+			log.Println("处理配置项: SDKCONFIG_DEFAULTS 在", path)
+		}
 		// 逐一處理每個 SDK 配置檔案。
 		for i, file := range d_SDKCONFIG_DEFAULTS {
 			if file == "." || file == ".." {
@@ -73,7 +75,9 @@ func loadCMakeLists(path string) {
 	// EXTRA_COMPONENT_DIRS 用於指定額外的元件目錄。
 	var d_EXTRA_COMPONENT_DIRS []string = makeFileVals(cMakeListsConfigs, "EXTRA_COMPONENT_DIRS")
 	if len(d_EXTRA_COMPONENT_DIRS) > 0 {
-		log.Println("处理配置项: EXTRA_COMPONENT_DIRS 在", path)
+		if detailed {
+			log.Println("处理配置项: EXTRA_COMPONENT_DIRS 在", path)
+		}
 		// 逐一處理每個指定的元件目錄。
 		for _, sub := range d_EXTRA_COMPONENT_DIRS {
 			if sub == "." || sub == ".." {
@@ -96,7 +100,9 @@ func loadCMakeLists(path string) {
 	// includes 用於包含其他 CMake 指令碼檔案。
 	var d_includes []string = makeFileVals(cMakeListsConfigs, "includes")
 	if len(d_includes) > 0 {
-		log.Println("处理配置项: includes 在", path)
+		if detailed {
+			log.Println("处理配置项: includes 在", path)
+		}
 		// 逐一處理每個包含的 CMake 指令碼檔案。
 		for i, sub := range d_includes {
 			sub = strings.TrimSpace(sub)
@@ -127,7 +133,9 @@ func loadCMakeLists(path string) {
 	// SRCS 用於指定專案中要編譯的原始檔列表。
 	var d_srcs []string = makeFileVals(cMakeListsConfigs, "srcs")
 	if len(d_srcs) > 0 {
-		log.Println("处理配置项: srcs 在", path)
+		if detailed {
+			log.Println("处理配置项: srcs 在", path)
+		}
 		// 逐一處理每個 .c 檔案。
 		for i, sub := range d_srcs {
 			sub = strings.TrimSpace(sub)

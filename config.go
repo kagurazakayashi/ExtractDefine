@@ -1,10 +1,10 @@
 package main
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 
+	log "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 	"gopkg.in/yaml.v2"
 )
 
@@ -12,7 +12,7 @@ import (
 type Config struct {
 	ExtractDefine int      `yaml:"ExtractDefine"` // 配置檔案屬於哪個軟體及版本號
 	CMakeList     string   `yaml:"CMakeList"`     // 入口 CMakeLists.txt 檔案路徑
-	Detail        bool     `yaml:"Detail"`        // 執行過程中是否輸出詳細過程
+	LogLevel      int      `yaml:"LogLevel"`      // 執行過程中是否輸出詳細過程
 	Filter        []string `yaml:"Filter"`        // 只需要這些宏的資訊
 }
 
@@ -29,20 +29,18 @@ func loadConfigFile() (Config, error) {
 		configFile, err = filepath.Abs(configFile)
 		if err != nil {
 			// 如果無法取得絕對路徑，記錄錯誤並返回
-			log.Printf("错误: 无法读取配置文件: %v", err)
+			log.LogC(logLevel, log.Clash, "无法读取配置文件:", err)
 			return config, err
 		}
 
 		// 檢查配置文件是否存在
 		if fileExists(configFile) {
-			if detailed {
-				log.Printf("读取配置文件: %s\n", configFile)
-			}
+			// LogC(logLevel, LogLevelDebug, "读取配置文件:", configFile)
 			// 讀取配置文件內容
 			cfg, err := os.ReadFile(configFile)
 			if err != nil {
 				// 如果讀取文件失敗，記錄錯誤並返回
-				log.Printf("错误: 无法读取配置文件 %s : %v\n", configFile, err)
+				log.LogC(logLevel, log.Clash, "无法读取配置文件:", err)
 				return config, err
 			}
 
@@ -50,7 +48,7 @@ func loadConfigFile() (Config, error) {
 			err = yaml.Unmarshal(cfg, &config)
 			if err != nil {
 				// 如果解析 YAML 失敗，記錄錯誤並返回
-				log.Printf("解析 YAML 文件失败: %v", err)
+				log.LogC(logLevel, log.Clash, "解析 YAML 文件失败:", err)
 				return config, err
 			}
 
@@ -58,7 +56,7 @@ func loadConfigFile() (Config, error) {
 			return config, nil
 		} else {
 			// 如果配置文件不存在，記錄錯誤並返回
-			log.Printf("错误: 配置文件路径不正确: %s\n", configFile)
+			log.LogC(logLevel, log.Clash, "配置文件路径不正确:", configFile)
 			return config, err
 		}
 	}
@@ -73,12 +71,12 @@ func loadConfigFile() (Config, error) {
 func loadConfig(config Config) {
 	// 檢查 ExtractDefine 是否等於 1，若否則記錄錯誤訊息並返回
 	if config.ExtractDefine != 1 {
-		log.Printf("错误: 配置文件版本 %d 不正确。\n", config.ExtractDefine)
+		log.LogC(logLevel, log.Clash, "配置文件版本", config.ExtractDefine, "不正确。")
 		return
 	}
 
 	// 將設定值指派給全域變數
-	cMakeListsPath = config.CMakeList // 設定 CMakeList 的路徑
-	detailed = config.Detail          // 設定詳細模式
-	filter = config.Filter            // 設定過濾器
+	cMakeListsPath = config.CMakeList        // 設定 CMakeList 的路徑
+	logLevel = log.LogLevel(config.LogLevel) // 設定詳細模式
+	filter = config.Filter                   // 設定過濾器
 }

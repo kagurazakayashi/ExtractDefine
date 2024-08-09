@@ -1,22 +1,33 @@
 package main
 
 import (
-	"log"
+	"path/filepath"
 	"strings"
+
+	log "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 )
 
 // loadDefaultsFile 函式從指定的檔案路徑載入預設值檔案。
 // path 參數為檔案的路徑字串。
 func loadDefaultsFile(path string) {
+	// if !fileExists(path) {
+	// 	LogC("错误: 文件不存在: ", path)
+	// 	return
+	// }
+
 	// 讀取指定路徑的檔案內容
 	data, err := readFile(path)
 
 	// 如果讀取檔案時發生錯誤，或是檔案內容為空，則記錄錯誤並返回
-	if err != nil || len(data) == 0 {
-		log.Println("错误: 无法读取文件: ", err)
+	if err != nil {
+		log.LogC(logLevel, log.Error, "无法读取文件: ", err)
 		return
 	}
-
+	if len(data) == 0 {
+		path, _ = filepath.Abs(path)
+		log.LogC(logLevel, log.Warning, "空文件: ", path)
+		return
+	}
 	// 解析檔案內容，載入預設值
 	parseDefaults(data)
 }
@@ -51,8 +62,6 @@ func parseDefaults(lines []string) {
 			modeStr = macroDicAddStr(kv[0], kv[1])
 		}
 		// 如果 detailed 模式啟用，則輸出詳細資訊
-		if detailed {
-			log.Printf("从行 %d %s定义 %s , 值为 %s (已存储 %d)\n", i, modeStr, kv[0], macroDic[kv[0]], len(macroDic))
-		}
+		log.LogC(logLevel, log.Info, "从行", i, modeStr, "定义", kv[0], ", 值为", macroDic[kv[0]], "(已存储", len(macroDic), ")")
 	}
 }

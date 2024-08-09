@@ -1,0 +1,11 @@
+ExtractDefine: 1
+CMakeList: project/CMakeLists.txt
+# LogLevel: 0:debug, 1:info, 2:ok,
+#           3:warn, 4:error, 5:fatal, 6:off
+LogLevel: 0
+Filter:
+  # none:Disable
+  - DEFINE1
+  - DEFINE2
+  - DEFINE3
+  - DEFINE4

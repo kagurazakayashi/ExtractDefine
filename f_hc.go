@@ -1,8 +1,9 @@
 package main
 
 import (
-	"log"
 	"strings"
+
+	log "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 )
 
 // loadHCFile 從指定路徑載入 .h .c 檔案
@@ -12,7 +13,7 @@ func loadHCFile(path string) {
 	data, err := readFile(path)
 	// 如果發生錯誤或讀取到的資料為空，則記錄錯誤訊息並返回
 	if err != nil || len(data) == 0 {
-		log.Println("错误: 无法读取文件 ", err)
+		log.LogC(logLevel, log.Error, "无法读取文件 ", err)
 		return
 	}
 	// 解析讀取到的 HC 檔案資料
@@ -50,8 +51,8 @@ func parseHC(lines []string) {
 
 			var modeStr string = ""
 			if len(noSave) > 0 { // 如果 noSave 不為空，表示要忽略該行定義
-				if detailed && noSave != endif {
-					log.Printf("忽略行 %d 定义 %s , 值为 %s (因为不满足 %s )\n", i, kv[0], macroDic[kv[0]], noSave)
+				if noSave != endif {
+					log.LogC(logLevel, log.Info, "忽略行", i, "定义", kv[0], ", 值为", macroDic[kv[0]], "(因为不满足", noSave, ")")
 				}
 				noSave = ""
 				continue
@@ -64,10 +65,8 @@ func parseHC(lines []string) {
 				modeStr = macroDicAddStr(kv[0], kv[1])
 			}
 
-			if detailed { // 如果詳細模式啟用，則記錄存儲過程
-				kv[0] = strings.TrimSpace(kv[0])
-				log.Printf("从行 %d %s定义 %s , 值为 %s (已存储 %d)\n", i, modeStr, kv[0], macroDic[kv[0]], len(macroDic))
-			}
+			kv[0] = strings.TrimSpace(kv[0])
+			log.LogC(logLevel, log.Info, "从行", i, modeStr, "定义 ", kv[0], ", 值为", macroDic[kv[0]], "(已存储 ", len(macroDic), ")")
 		} else if strings.HasPrefix(line, "#undef") { // 處理 #undef 指令
 			var spaceIndex int = strings.Index(line, " ") // 找到第一個空白字符的位置
 			if spaceIndex < 0 {
@@ -83,18 +82,16 @@ func parseHC(lines []string) {
 			}
 
 			if len(noSave) > 0 { // 如果 noSave 不為空，表示要忽略該行取消定義
-				if detailed && noSave != endif {
-					log.Printf("忽略行 %d 取消定义 %s , 值为 %s (因为不满足 %s )\n", i, kv[0], macroDic[kv[0]], noSave)
+				if noSave != endif {
+					log.LogC(logLevel, log.Info, "忽略行 ", i, " 取消定义", kv[0], ", 值为 ", macroDic[kv[0]], " (因为不满足 ", noSave, " )")
 				}
 				noSave = ""
 				continue
 			}
 
 			rmVal := macroDicRemove(kv[0]) // 從宏定義字典中移除對應的鍵值
-			if detailed {                  // 如果詳細模式啟用，則記錄刪除過程
-				kv[0] = strings.TrimSpace(kv[0])
-				log.Printf("从行 %d 删除定义 %s , 值为 %s (已存储 %d)\n", i, kv[0], rmVal, len(macroDic))
-			}
+			kv[0] = strings.TrimSpace(kv[0])
+			log.LogC(logLevel, log.Info, "从行 ", i, " ", " 删除定义 ", kv[0], ", 值为 ", rmVal, "(已存储 ", len(macroDic), ")")
 		} else if strings.HasPrefix(line, "#if") { // 處理 #if 指令
 			var spaceIndex int = strings.Index(line, " ")
 			if spaceIndex < 0 {

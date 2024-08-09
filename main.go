@@ -3,19 +3,20 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
+
+	log "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 )
 
 var (
 	cMakeListsPath string
 	cMakeListsDir  string
-	detailed       bool
 	configFile     string
 	filter         []string
 	filterStr      string
+	logLevel       log.LogLevel
 )
 
 func main() {
@@ -25,12 +26,14 @@ func main() {
 	// -i 參數：指定 CMakeLists.txt 文件的路徑，將從這裡開始搜索宏定義。
 	flag.StringVar(&cMakeListsPath, "i", "", "指定一个 CMakeLists.txt 文件，将从这里开始搜索宏定义。")
 	// -d 參數：決定是否顯示詳細信息。
-	flag.BoolVar(&detailed, "d", false, "是否显示详细信息。")
+	var iLogLevel int
+	flag.IntVar(&iLogLevel, "d", 0, "日志显示级别: 0=调试, 1=信息, 2=成功, 3=警告, 4=错误, 5=失败, 6=不输出日志")
 	// -f 參數：只需要這些宏的資訊。
 	flag.StringVar(&filterStr, "f", "", "只需要这些宏的信息(用,分隔)")
 
 	// 解析命令行參數
 	flag.Parse()
+	logLevel = log.LogLevel(iLogLevel)
 	if len(filterStr) > 0 {
 		filter = strings.Split(filterStr, ",")
 	}
@@ -46,22 +49,18 @@ func main() {
 		return
 	}
 
-	if detailed {
-		log.Println("C项目生效宏定义提取工具")
-	}
+	log.LogC(logLevel, log.Info, "C项目生效宏定义提取工具")
 
 	// 檢查指定的 CMakeLists.txt 文件是否存在，如果不存在則輸出錯誤訊息並退出程序
 	if !fileExists(cMakeListsPath) {
-		log.Println("错误: 指定的 CMakeLists.txt 文件不存在:", cMakeListsPath)
+		log.LogC(logLevel, log.Error, "指定的 CMakeLists.txt 文件不存在:", cMakeListsPath)
 		return
 	}
 
 	// 取得 CMakeLists.txt 文件所在的資料夾路徑
 	cMakeListsDir = filepath.Dir(cMakeListsPath)
 	// 日誌輸出工程文件夾路徑
-	if detailed {
-		log.Println("工程文件夹: ", cMakeListsDir)
-	}
+	log.LogC(logLevel, log.Debug, "工程文件夹: ", cMakeListsDir)
 
 	// 生成要解析的文件列表並開始解析
 	makeFileList()
@@ -85,9 +84,8 @@ func main() {
 	}
 
 	// 解析完成後，輸出解析到的宏定義的數量
-	if detailed {
-		log.Printf("解析完毕，定义列表 ( %s ):\n", numView)
-	}
+	log.LogC(logLevel, log.Info, "解析完毕，定义列表 (", numView, "):")
+	log.ResetColorE()
 
 	// 遍歷並輸出所有解析到的宏定義及其對應的值
 	if useFilter {

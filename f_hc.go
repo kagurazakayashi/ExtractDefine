@@ -1,8 +1,10 @@
 package main
 
 import (
+	"strconv"
 	"strings"
 
+	lang "github.com/kagurazakayashi/libNyaruko_Go/nyai18n"
 	log "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 )
 
@@ -13,7 +15,7 @@ func loadHCFile(path string) {
 	data, err := readFile(path)
 	// 如果發生錯誤或讀取到的資料為空，則記錄錯誤訊息並返回
 	if err != nil || len(data) == 0 {
-		log.LogC(logLevel, log.Error, "无法读取文件 ", err)
+		log.LogC(logLevel, log.Error, lang.GetMultilingualText("UnableReadFile"), err)
 		return
 	}
 	// 解析讀取到的 HC 檔案資料
@@ -52,7 +54,12 @@ func parseHC(lines []string) {
 			var modeStr string = ""
 			if len(noSave) > 0 { // 如果 noSave 不為空，表示要忽略該行定義
 				if noSave != endif {
-					log.LogC(logLevel, log.Info, "忽略行", i, "定义", kv[0], ", 值为", macroDic[kv[0]], "(因为不满足", noSave, ")")
+					var logStr string = lang.GetMultilingualText("IgnoreDefine")
+					logStr = strings.Replace(logStr, "%ROW%", strconv.Itoa(i), 1)
+					logStr = strings.Replace(logStr, "%NAME%", kv[0], 1)
+					logStr = strings.Replace(logStr, "%VAL%", macroDic[kv[0]], 1)
+					logStr = strings.Replace(logStr, "%IF%", noSave, 1)
+					log.LogC(logLevel, log.Info, logStr)
 				}
 				noSave = ""
 				continue
@@ -66,7 +73,13 @@ func parseHC(lines []string) {
 			}
 
 			kv[0] = strings.TrimSpace(kv[0])
-			log.LogC(logLevel, log.Info, "从行", i, modeStr, "定义 ", kv[0], ", 值为", macroDic[kv[0]], "(已存储 ", len(macroDic), ")")
+			var logStr string = lang.GetMultilingualText("DefineChange")
+			logStr = strings.Replace(logStr, "%ROW%", strconv.Itoa(i), 1)
+			logStr = strings.Replace(logStr, "%MODE%", modeStr, 1)
+			logStr = strings.Replace(logStr, "%NAME%", kv[0], 1)
+			logStr = strings.Replace(logStr, "%VAL%", macroDic[kv[0]], 1)
+			logStr = strings.Replace(logStr, "%TOTAL%", strconv.Itoa(len(macroDic)), 1)
+			log.LogC(logLevel, log.Info, logStr)
 		} else if strings.HasPrefix(line, "#undef") { // 處理 #undef 指令
 			var spaceIndex int = strings.Index(line, " ") // 找到第一個空白字符的位置
 			if spaceIndex < 0 {
@@ -83,7 +96,12 @@ func parseHC(lines []string) {
 
 			if len(noSave) > 0 { // 如果 noSave 不為空，表示要忽略該行取消定義
 				if noSave != endif {
-					log.LogC(logLevel, log.Info, "忽略行 ", i, " 取消定义", kv[0], ", 值为 ", macroDic[kv[0]], " (因为不满足 ", noSave, " )")
+					var logStr string = lang.GetMultilingualText("IgnoreDefine")
+					logStr = strings.Replace(logStr, "%ROW%", strconv.Itoa(i), 1)
+					logStr = strings.Replace(logStr, "%NAME%", kv[0], 1)
+					logStr = strings.Replace(logStr, "%VAL%", macroDic[kv[0]], 1)
+					logStr = strings.Replace(logStr, "%IF%", noSave, 1)
+					log.LogC(logLevel, log.Info, logStr)
 				}
 				noSave = ""
 				continue
@@ -91,7 +109,13 @@ func parseHC(lines []string) {
 
 			rmVal := macroDicRemove(kv[0]) // 從宏定義字典中移除對應的鍵值
 			kv[0] = strings.TrimSpace(kv[0])
-			log.LogC(logLevel, log.Info, "从行 ", i, " ", " 删除定义 ", kv[0], ", 值为 ", rmVal, "(已存储 ", len(macroDic), ")")
+			var logStr string = lang.GetMultilingualText("DefineChange")
+			logStr = strings.Replace(logStr, "%ROW%", strconv.Itoa(i), 1)
+			logStr = strings.Replace(logStr, "%MODE%", lang.GetMultilingualText("Delete"), 1) + " "
+			logStr = strings.Replace(logStr, "%NAME%", kv[0], 1)
+			logStr = strings.Replace(logStr, "%VAL%", rmVal, 1)
+			logStr = strings.Replace(logStr, "%TOTAL%", strconv.Itoa(len(macroDic)), 1)
+			log.LogC(logLevel, log.Info, logStr)
 		} else if strings.HasPrefix(line, "#if") { // 處理 #if 指令
 			var spaceIndex int = strings.Index(line, " ")
 			if spaceIndex < 0 {

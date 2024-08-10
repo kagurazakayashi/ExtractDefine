@@ -2,8 +2,10 @@ package main
 
 import (
 	"path/filepath"
+	"strconv"
 	"strings"
 
+	lang "github.com/kagurazakayashi/libNyaruko_Go/nyai18n"
 	log "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 )
 
@@ -20,12 +22,12 @@ func loadDefaultsFile(path string) {
 
 	// 如果讀取檔案時發生錯誤，或是檔案內容為空，則記錄錯誤並返回
 	if err != nil {
-		log.LogC(logLevel, log.Error, "无法读取文件: ", err)
+		log.LogC(logLevel, log.Error, lang.GetMultilingualText("UnableReadFile")+": ", err)
 		return
 	}
 	if len(data) == 0 {
 		path, _ = filepath.Abs(path)
-		log.LogC(logLevel, log.Warning, "空文件: ", path)
+		log.LogC(logLevel, log.Warning, lang.GetMultilingualText("EmptyFile")+": ", path)
 		return
 	}
 	// 解析檔案內容，載入預設值
@@ -62,6 +64,15 @@ func parseDefaults(lines []string) {
 			modeStr = macroDicAddStr(kv[0], kv[1])
 		}
 		// 如果 detailed 模式啟用，則輸出詳細資訊
-		log.LogC(logLevel, log.Info, "从行", i, modeStr, "定义", kv[0], ", 值为", macroDic[kv[0]], "(已存储", len(macroDic), ")")
+
+		// 从行12删除定义A，值为ccc
+		// Delete definition A from row 12 with value ccc
+		var logStr string = lang.GetMultilingualText("DefineChange")
+		logStr = strings.Replace(logStr, "%ROW%", strconv.Itoa(i), 1)
+		logStr = strings.Replace(logStr, "%MODE%", modeStr, 1)
+		logStr = strings.Replace(logStr, "%NAME%", kv[0], 1)
+		logStr = strings.Replace(logStr, "%VAL%", macroDic[kv[0]], 1)
+		logStr = strings.Replace(logStr, "%TOTAL%", strconv.Itoa(len(macroDic)), 1)
+		log.LogC(logLevel, log.Info, logStr)
 	}
 }

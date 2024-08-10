@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	lang "github.com/kagurazakayashi/libNyaruko_Go/nyai18n"
 	log "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 )
 
@@ -35,12 +36,12 @@ func makeFileVals(cMakeListsConfigs map[string][]string, findKey string) []strin
 // 包含的其他 CMake 指令碼，以及專案中要編譯的原始檔列表。
 func loadCMakeLists(path string) {
 	// 如果 detailed 為 true，則記錄當前正在加載的 CMakeList 檔案路徑。
-	log.LogC(logLevel, log.Debug, "加载 CMakeList :", path)
+	log.LogC(logLevel, log.Debug, lang.GetMultilingualText("ProcessFolder")+" CMakeList :", path)
 	// 讀取 CMakeLists.txt 檔案的內容。
 	data, err := readFile(path)
 	if err != nil || len(data) == 0 {
 		// 如果讀取失敗，記錄錯誤並返回。
-		log.LogC(logLevel, log.Clash, "错误: 无法读取文件 ", err)
+		log.LogC(logLevel, log.Clash, lang.GetMultilingualText("Error")+":"+lang.GetMultilingualText("UnableFile"), err)
 		return
 	}
 
@@ -53,7 +54,7 @@ func loadCMakeLists(path string) {
 	// SDKCONFIG_DEFAULTS 用於指定預設的 SDK 配置檔案。
 	var d_SDKCONFIG_DEFAULTS []string = makeFileVals(cMakeListsConfigs, "SDKCONFIG_DEFAULTS")
 	if len(d_SDKCONFIG_DEFAULTS) > 0 {
-		log.LogC(logLevel, log.Debug, "处理配置项: SDKCONFIG_DEFAULTS 在", path)
+		log.LogC(logLevel, log.Debug, lang.GetMultilingualText("ProcessItem")+": SDKCONFIG_DEFAULTS :", path)
 		// 逐一處理每個 SDK 配置檔案。
 		for i, file := range d_SDKCONFIG_DEFAULTS {
 			if file == "." || file == ".." {
@@ -61,7 +62,7 @@ func loadCMakeLists(path string) {
 			}
 			// 補全文件路徑並分析該配置檔案。
 			file = completeFilePath(dir, file)
-			log.LogC(logLevel, log.Debug, "分析文件", i+1, ":", file)
+			log.LogC(logLevel, log.Debug, lang.GetMultilingualText("AnalyzeFile"), i+1, ":", file)
 			loadDefaultsFile(file)
 		}
 	}
@@ -70,7 +71,7 @@ func loadCMakeLists(path string) {
 	// EXTRA_COMPONENT_DIRS 用於指定額外的元件目錄。
 	var d_EXTRA_COMPONENT_DIRS []string = makeFileVals(cMakeListsConfigs, "EXTRA_COMPONENT_DIRS")
 	if len(d_EXTRA_COMPONENT_DIRS) > 0 {
-		log.LogC(logLevel, log.Debug, "处理配置项: EXTRA_COMPONENT_DIRS 在", path)
+		log.LogC(logLevel, log.Debug, lang.GetMultilingualText("ProcessItem")+": EXTRA_COMPONENT_DIRS :", path)
 		// 逐一處理每個指定的元件目錄。
 		for _, sub := range d_EXTRA_COMPONENT_DIRS {
 			if sub == "." || sub == ".." {
@@ -93,7 +94,7 @@ func loadCMakeLists(path string) {
 	// includes 用於包含其他 CMake 指令碼檔案。
 	var d_includes []string = makeFileVals(cMakeListsConfigs, "includes")
 	if len(d_includes) > 0 {
-		log.LogC(logLevel, log.Debug, "处理配置项: includes 在", path)
+		log.LogC(logLevel, log.Debug, lang.GetMultilingualText("ProcessItem")+": includes:", path)
 		// 逐一處理每個包含的 CMake 指令碼檔案。
 		for i, sub := range d_includes {
 			sub = strings.TrimSpace(sub)
@@ -104,13 +105,13 @@ func loadCMakeLists(path string) {
 			sub = completeFilePath(dir, sub)
 			fileList, err := listFilesMatchingPattern(sub, "*.h,*.c")
 			if err != nil {
-				log.LogC(logLevel, log.Error, "错误: 无法读取文件夹 ", err)
+				log.LogC(logLevel, log.Error, lang.GetMultilingualText("Error")+":"+lang.GetMultilingualText("UnableFolder"), err)
 				return
 			}
-			log.LogC(logLevel, log.Debug, "进入文件夹", i+1, ":", sub)
+			log.LogC(logLevel, log.Debug, lang.GetMultilingualText("Folder"), i+1, ":", sub)
 			// 對每個找到的檔案進行分析。
 			for i, file := range fileList {
-				log.LogC(logLevel, log.Debug, "includes: 分析文件", i+1, ":", file)
+				log.LogC(logLevel, log.Debug, "includes:", lang.GetMultilingualText("AnalyzeFile"), i+1, ":", file)
 				loadHCFile(file)
 			}
 		}
@@ -120,13 +121,13 @@ func loadCMakeLists(path string) {
 	// SRCS 用於指定專案中要編譯的原始檔列表。
 	var d_srcs []string = makeFileVals(cMakeListsConfigs, "srcs")
 	if len(d_srcs) > 0 {
-		log.LogC(logLevel, log.Debug, "处理配置项: srcs 在", path)
+		log.LogC(logLevel, log.Debug, lang.GetMultilingualText("ProcessItem")+": srcs:", path)
 		// 逐一處理每個 .c 檔案。
 		for i, sub := range d_srcs {
 			sub = strings.TrimSpace(sub)
 			sub = completeFilePath(dir, sub)
 			if strings.HasSuffix(sub, ".c") {
-				log.LogC(logLevel, log.Debug, "srcs: 分析文件", i+1, ":", sub)
+				log.LogC(logLevel, log.Debug, "srcs:", lang.GetMultilingualText("AnalyzeFile"), i+1, ":", sub)
 				loadHCFile(sub)
 			}
 		}
@@ -149,7 +150,7 @@ func findCMakeLists(root string) []string {
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		// 如果遍歷某個文件或文件夾時發生錯誤，記錄錯誤訊息並返回錯誤
 		if err != nil {
-			log.LogC(logLevel, log.Error, "无法读取文件夹: ", err)
+			log.LogC(logLevel, log.Error, lang.GetMultilingualText("UnableFolder")+":", err)
 			return err
 		}
 		// 檢查當前文件是否為非目錄且名稱為 "CMakeLists.txt"
@@ -160,7 +161,7 @@ func findCMakeLists(root string) []string {
 			absPath, err := filepath.Abs(path)
 			// 如果轉換過程中出現錯誤，記錄錯誤訊息並返回錯誤
 			if err != nil {
-				log.LogC(logLevel, log.Error, "无法读取文件: ", err)
+				log.LogC(logLevel, log.Error, lang.GetMultilingualText("UnableFile")+":", err)
 				return err
 			}
 			// 將絕對路徑加入到切片中
@@ -172,7 +173,7 @@ func findCMakeLists(root string) []string {
 
 	// 如果在遍歷過程中出現錯誤，記錄錯誤訊息並返回一個空的字串切片
 	if err != nil {
-		log.LogC(logLevel, log.Error, "无法读取文件夹: ", err)
+		log.LogC(logLevel, log.Error, lang.GetMultilingualText("UnableFolder")+":", err)
 		return []string{}
 	}
 

@@ -1,3 +1,4 @@
+//go:generate goversioninfo -icon=ico/icon.ico -manifest=main.exe.manifest -arm=true
 package main
 
 import (
@@ -73,7 +74,8 @@ func main() {
 		return
 	}
 
-	logs.LogC(logLevel, logs.Info, "C项目生效宏定义提取工具")
+	logs.LogC(logLevel, logs.Info, lang.GetMultilingualText("Title"))
+	logs.LogC(logLevel, logs.Debug, "https://github.com/kagurazakayashi/ExtractDefine")
 
 	// 檢查指定的 CMakeLists.txt 文件是否存在，如果不存在則輸出錯誤訊息並退出程序
 	if !fileExists(cMakeListsPath) {
@@ -84,7 +86,7 @@ func main() {
 	// 取得 CMakeLists.txt 文件所在的資料夾路徑
 	cMakeListsDir = filepath.Dir(cMakeListsPath)
 	// 日誌輸出工程文件夾路徑
-	logs.LogC(logLevel, logs.Debug, "工程文件夹: ", cMakeListsDir)
+	logs.LogC(logLevel, logs.Debug, lang.GetMultilingualText("Folder"), ":", cMakeListsDir)
 
 	// 生成要解析的文件列表並開始解析
 	makeFileList()

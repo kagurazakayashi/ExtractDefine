@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Version=1.5.5
+Name=Extract Define
+GenericName=Extract Define
+GenericName[zh_CN]=C项目生效宏定义提取工具
+GenericName[zh_TW]=C專案生效宏定義提取工具
+Comment=C project effective macro definition extraction tool
+Comment[zh_CN]=C项目生效宏定义提取工具
+Comment[zh_TW]=C專案生效宏定義提取工具
+Icon=icon.png
+Exec=ExtractDefine
+Terminal=true
+Categories=Application;Network;
+Keywords=mqtt;

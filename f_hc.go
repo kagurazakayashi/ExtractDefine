@@ -6,6 +6,7 @@ import (
 
 	lang "github.com/kagurazakayashi/libNyaruko_Go/nyai18n"
 	log "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
+	logs "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 )
 
 // loadHCFile 從指定路徑載入 .h .c 檔案
@@ -15,7 +16,7 @@ func loadHCFile(path string) {
 	data, err := readFile(path)
 	// 如果發生錯誤或讀取到的資料為空，則記錄錯誤訊息並返回
 	if err != nil || len(data) == 0 {
-		log.LogC(logLevel, log.Error, lang.GetMultilingualText("UnableReadFile"), err)
+		logs.LogC(logLevel, logs.Error, lang.GetMultilingualText("UnableReadFile"), err)
 		return
 	}
 	// 解析讀取到的 HC 檔案資料
@@ -59,7 +60,7 @@ func parseHC(lines []string) {
 					logStr = strings.Replace(logStr, "%NAME%", kv[0], 1)
 					logStr = strings.Replace(logStr, "%VAL%", macroDic[kv[0]], 1)
 					logStr = strings.Replace(logStr, "%IF%", noSave, 1)
-					log.LogC(logLevel, log.Info, logStr)
+					logs.LogC(logLevel, log.Info, logStr)
 				}
 				noSave = ""
 				continue
@@ -79,7 +80,7 @@ func parseHC(lines []string) {
 			logStr = strings.Replace(logStr, "%NAME%", kv[0], 1)
 			logStr = strings.Replace(logStr, "%VAL%", macroDic[kv[0]], 1)
 			logStr = strings.Replace(logStr, "%TOTAL%", strconv.Itoa(len(macroDic)), 1)
-			log.LogC(logLevel, log.Info, logStr)
+			logs.LogC(logLevel, log.Info, logStr)
 		} else if strings.HasPrefix(line, "#undef") { // 處理 #undef 指令
 			var spaceIndex int = strings.Index(line, " ") // 找到第一個空白字符的位置
 			if spaceIndex < 0 {
@@ -101,7 +102,7 @@ func parseHC(lines []string) {
 					logStr = strings.Replace(logStr, "%NAME%", kv[0], 1)
 					logStr = strings.Replace(logStr, "%VAL%", macroDic[kv[0]], 1)
 					logStr = strings.Replace(logStr, "%IF%", noSave, 1)
-					log.LogC(logLevel, log.Info, logStr)
+					logs.LogC(logLevel, log.Info, logStr)
 				}
 				noSave = ""
 				continue
@@ -115,7 +116,7 @@ func parseHC(lines []string) {
 			logStr = strings.Replace(logStr, "%NAME%", kv[0], 1)
 			logStr = strings.Replace(logStr, "%VAL%", rmVal, 1)
 			logStr = strings.Replace(logStr, "%TOTAL%", strconv.Itoa(len(macroDic)), 1)
-			log.LogC(logLevel, log.Info, logStr)
+			logs.LogC(logLevel, log.Info, logStr)
 		} else if strings.HasPrefix(line, "#if") { // 處理 #if 指令
 			var spaceIndex int = strings.Index(line, " ")
 			if spaceIndex < 0 {

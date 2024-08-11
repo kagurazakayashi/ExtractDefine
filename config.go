@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	log "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
+	logs "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 	"gopkg.in/yaml.v2"
 )
 
@@ -29,7 +30,7 @@ func loadConfigFile() (Config, error) {
 		configFile, err = filepath.Abs(configFile)
 		if err != nil {
 			// 如果無法取得絕對路徑，記錄錯誤並返回
-			log.LogC(logLevel, log.Clash, "无法读取配置文件:", err)
+			logs.LogC(logLevel, log.Clash, "无法读取配置文件:", err)
 			return config, err
 		}
 
@@ -40,7 +41,7 @@ func loadConfigFile() (Config, error) {
 			cfg, err := os.ReadFile(configFile)
 			if err != nil {
 				// 如果讀取文件失敗，記錄錯誤並返回
-				log.LogC(logLevel, log.Clash, "无法读取配置文件:", err)
+				logs.LogC(logLevel, log.Clash, "无法读取配置文件:", err)
 				return config, err
 			}
 
@@ -48,7 +49,7 @@ func loadConfigFile() (Config, error) {
 			err = yaml.Unmarshal(cfg, &config)
 			if err != nil {
 				// 如果解析 YAML 失敗，記錄錯誤並返回
-				log.LogC(logLevel, log.Clash, "解析 YAML 文件失败:", err)
+				logs.LogC(logLevel, log.Clash, "解析 YAML 文件失败:", err)
 				return config, err
 			}
 
@@ -56,7 +57,7 @@ func loadConfigFile() (Config, error) {
 			return config, nil
 		} else {
 			// 如果配置文件不存在，記錄錯誤並返回
-			log.LogC(logLevel, log.Clash, "配置文件路径不正确:", configFile)
+			logs.LogC(logLevel, log.Clash, "配置文件路径不正确:", configFile)
 			return config, err
 		}
 	}
@@ -71,12 +72,12 @@ func loadConfigFile() (Config, error) {
 func loadConfig(config Config) {
 	// 檢查 ExtractDefine 是否等於 1，若否則記錄錯誤訊息並返回
 	if config.ExtractDefine != 1 {
-		log.LogC(logLevel, log.Clash, "配置文件版本", config.ExtractDefine, "不正确。")
+		logs.LogC(logLevel, log.Clash, "配置文件版本", config.ExtractDefine, "不正确。")
 		return
 	}
 
 	// 將設定值指派給全域變數
-	cMakeListsPath = config.CMakeList        // 設定 CMakeList 的路徑
-	logLevel = log.LogLevel(config.LogLevel) // 設定詳細模式
-	filter = config.Filter                   // 設定過濾器
+	cMakeListsPath = config.CMakeList         // 設定 CMakeList 的路徑
+	logLevel = logs.LogLevel(config.LogLevel) // 設定詳細模式
+	filter = config.Filter                    // 設定過濾器
 }

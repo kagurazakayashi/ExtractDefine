@@ -1,4 +1,5 @@
 *.log
+result.txt
 /ExtractDefine
 
 # Created by https://www.toptal.com/developers/gitignore/api/windows,macos,linux,go,visualstudiocode,goland

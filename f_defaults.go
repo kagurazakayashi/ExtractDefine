@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	lang "github.com/kagurazakayashi/libNyaruko_Go/nyai18n"
-	log "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 	logs "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 )
 
@@ -71,6 +70,6 @@ func parseDefaults(lines []string) {
 		logStr = strings.Replace(logStr, "%NAME%", kv[0], 1)
 		logStr = strings.Replace(logStr, "%VAL%", macroDic[kv[0]], 1)
 		logStr = strings.Replace(logStr, "%TOTAL%", strconv.Itoa(len(macroDic)), 1)
-		logs.LogC(logLevel, log.Info, logStr)
+		logs.LogC(logLevel, logs.Info, logStr)
 	}
 }

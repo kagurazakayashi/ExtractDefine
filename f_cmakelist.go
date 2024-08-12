@@ -2,7 +2,48 @@ package main
 
 import (
 	"strings"
+
+	lang "github.com/kagurazakayashi/libNyaruko_Go/nyai18n"
+	logs "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 )
+
+// replacePlaceholders 這個函式會將輸入字串中的佔位符取代成對應的值。
+// 它會遍歷 macroDic，並將每個佔位符（以${key}的格式）替換為字典中對應的值。
+// 輸入：input 字串，可能包含一或多個佔位符。
+// 輸出：一個字串，所有佔位符已被替換為相應的值。
+func replacePlaceholders(input string) string {
+	var varList []string = []string{}
+	// 找出所有 ${变量名}
+	var input2 = input
+	for strings.Contains(input2, "${") {
+		var start int = strings.Index(input2, "${")
+		var end int = strings.Index(input2, "}")
+		if start == -1 || end == -1 {
+			break
+		}
+		var varName string = input2[start+2 : end]
+		varList = append(varList, varName)
+		input2 = input2[:start] + input2[end+1:]
+	}
+
+	// 替换变量
+	for _, varName := range varList {
+		var varValue string = macroDic[varName]
+		if varValue == "" {
+			// 如果字典中沒有對應的值
+			var logStr string = lang.GetMultilingualText("NoVar") + ": " + varName
+			logs.LogC(logLevel, logs.Warning, logStr)
+			input = strings.ReplaceAll(input, "${"+varName+"}", varName)
+		} else {
+			var logStr string = lang.GetMultilingualText("ReplaceVar")
+			logStr = strings.Replace(logStr, "%NAME%", varName, 1)
+			logStr = strings.Replace(logStr, "%VAL%", varValue, 1)
+			logs.LogC(logLevel, logs.Debug, logStr)
+			input = strings.ReplaceAll(input, "${"+varName+"}", varValue)
+		}
+	}
+	return input
+}
 
 // parseSingleLineSet 解析單行的設定語句，並提取設定的鍵和值。
 // 該函式會檢查輸入行是否符合特定格式，並根據格式提取相關資訊。
@@ -32,9 +73,10 @@ func parseSingleLineSet(line string, key string) (string, []string, bool) {
 			key := parts[0]
 			// 提取值
 			values := parts[1:]
-			// 去除每個值的引號
+			// 去除每個值的引號，填充佔位符
 			for i, value := range values {
 				values[i] = strings.Trim(value, `"`)
+				values[i] = replacePlaceholders(values[i])
 			}
 			// 返回提取的鍵、值列表和匹配成功的標誌
 			return key, values, true
@@ -58,9 +100,10 @@ func parseSingleLineSet(line string, key string) (string, []string, bool) {
 				key := parts[0]
 				// 提取值
 				values := parts[1:]
-				// 去除每個值的引號
+				// 去除每個值的引號，填充佔位符
 				for i, value := range values {
 					values[i] = strings.Trim(value, `"`)
+					values[i] = replacePlaceholders(values[i])
 				}
 				// 返回提取的鍵、值列表和匹配成功的標誌
 				return key, values, true

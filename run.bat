@@ -1,1 +1,1 @@
-go build -o ExtractDefine.exe && ExtractDefine.exe -c ExtractDefine.yaml >run.log 2>err.log
+go build -o ExtractDefine.exe && ExtractDefine.exe -c ExtractDefine.yaml >result.txt 2>run.log

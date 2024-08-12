@@ -41,6 +41,18 @@ Recognizable keywords:
 - result output to: Stdout
   - Result format: `macroName=macroContent`, each line
 
+#### Example
+
+Assuming there is a configuration file `ExtractDefine.yaml`, to output the run log to `run.log` and the run result to `result.txt`, please use the following command:
+
+`./ExtractDefine -c ExtractDefine.yaml >result.txt 2>run.log`
+
+## Compile
+
+`go build .`
+
+For full platform compilation, refer to [build.bat](build.bat) .
+
 ### License
 
 [Mulan Permissive Software License，Version 2 (Mulan PSL v2)](http://license.coscl.org.cn/MulanPSL2)
@@ -72,7 +84,7 @@ Recognizable keywords:
 
 ### 配置文件
 
-- 示例配置文件见: [ExtractDefine.yaml](ExtractDefine.yaml)
+- 示例配置文件见: [ExtractDefine.example.yaml](ExtractDefine.example.yaml)
 - 语言文本文件: `(可执行文件名).i18n.ini`
 
 ### 输出
@@ -80,6 +92,18 @@ Recognizable keywords:
 - 日志信息输出到: Stderr
 - 结果输出到: Stdout
   - 结果格式: `宏名称=宏内容`, 每个一行
+
+#### 示例
+
+假定有配置文件 `ExtractDefine.yaml`, 将运行日志输出到 `run.log`, 将运行结果输出到 `result.txt`, 请使用下面的命令:
+
+`./ExtractDefine -c ExtractDefine.yaml >result.txt 2>run.log`
+
+## 编译
+
+`go build .`
+
+全平台编译参考 [build.bat](build.bat) 。
 
 ### 协议
 

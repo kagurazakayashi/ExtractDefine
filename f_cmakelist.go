@@ -11,7 +11,7 @@ import (
 // 它會遍歷 macroDic，並將每個佔位符（以${key}的格式）替換為字典中對應的值。
 // 輸入：input 字串，可能包含一或多個佔位符。
 // 輸出：一個字串，所有佔位符已被替換為相應的值。
-func replacePlaceholders(input string) string {
+func replacePlaceholders(input string) (bool, string) {
 	var varList []string = []string{}
 	// 找出所有 ${变量名}
 	var input2 = input
@@ -33,7 +33,8 @@ func replacePlaceholders(input string) string {
 			// 如果字典中沒有對應的值
 			var logStr string = lang.GetMultilingualText("NoVar") + ": " + varName
 			logs.LogC(logLevel, logs.Warning, logStr)
-			input = strings.ReplaceAll(input, "${"+varName+"}", varName)
+			// input = strings.ReplaceAll(input, "${"+varName+"}", varName)
+			return false, input
 		} else {
 			var logStr string = lang.GetMultilingualText("ReplaceVar")
 			logStr = strings.Replace(logStr, "%NAME%", varName, 1)
@@ -42,7 +43,7 @@ func replacePlaceholders(input string) string {
 			input = strings.ReplaceAll(input, "${"+varName+"}", varValue)
 		}
 	}
-	return input
+	return true, input
 }
 
 // parseSingleLineSet 解析單行的設定語句，並提取設定的鍵和值。
@@ -76,7 +77,12 @@ func parseSingleLineSet(line string, key string) (string, []string, bool) {
 			// 去除每個值的引號，填充佔位符
 			for i, value := range values {
 				values[i] = strings.Trim(value, `"`)
-				values[i] = replacePlaceholders(values[i])
+				repOK, repVal := replacePlaceholders(values[i])
+				if !repOK {
+					logs.LogC(logLevel, logs.Warning, lang.GetMultilingualText("NoVarInter"), ":", value)
+					return "", nil, false
+				}
+				values[i] = repVal
 			}
 			// 返回提取的鍵、值列表和匹配成功的標誌
 			return key, values, true
@@ -103,7 +109,12 @@ func parseSingleLineSet(line string, key string) (string, []string, bool) {
 				// 去除每個值的引號，填充佔位符
 				for i, value := range values {
 					values[i] = strings.Trim(value, `"`)
-					values[i] = replacePlaceholders(values[i])
+					repOK, repVal := replacePlaceholders(values[i])
+					if !repOK {
+						logs.LogC(logLevel, logs.Warning, lang.GetMultilingualText("NoVarInter"), ":", value)
+						return "", nil, false
+					}
+					values[i] = repVal
 				}
 				// 返回提取的鍵、值列表和匹配成功的標誌
 				return key, values, true

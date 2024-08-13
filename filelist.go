@@ -128,7 +128,12 @@ func loadCMakeLists(path string) {
 			sub = strings.TrimSpace(sub)
 			sub = completeFilePath(dir, sub)
 			if strings.HasSuffix(sub, ".c") {
-				sub = replacePlaceholders(sub)
+				repOK, repVal := replacePlaceholders(sub)
+				if !repOK {
+					logs.LogC(logLevel, logs.Warning, "srcs:", lang.GetMultilingualText("NoVarInter"), i+1, ":", sub)
+					continue
+				}
+				sub = repVal
 				logs.LogC(logLevel, logs.Debug, "srcs:", lang.GetMultilingualText("AnalyzeFile"), i+1, ":", sub)
 				loadHCFile(sub)
 			}

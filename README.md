@@ -35,6 +35,19 @@ Recognizable keywords:
 - See the sample configuration file: [ExtractDefine.yaml](ExtractDefine.yaml)
 - Language text file: `(executable file name).i18n.ini`
 
+#### Variable default values
+
+During parsing, the `EXTRACTDEFINE` variable is provided to distinguish when using this tool.
+
+- If `CMAKE_C_FLAGS` is not specified,
+- The default value will be: empty string.
+- If `CMAKE_SOURCE_DIR`, `CMAKE_CURRENT_LIST_DIR`, `ROOT_DIR`, `__root_dir` are not specified,
+- The default value will be: the path to the folder where the root `CMakeLists.txt` is located.
+- If `CMAKE_CURRENT_SOURCE_DIR`, `COMPONENT_DIR` are not specified,
+- The default value will be: the path to the folder where the currently processed `CMakeLists.txt` is located.
+
+If still not found, abort the processing of the current configuration.
+
 ### Output
 
 - log information output to: Stderr
@@ -46,6 +59,10 @@ Recognizable keywords:
 Assuming there is a configuration file `ExtractDefine.yaml`, to output the run log to `run.log` and the run result to `result.txt`, please use the following command:
 
 `./ExtractDefine -c ExtractDefine.yaml >result.txt 2>run.log`
+
+If you want to output only to `result.txt`, please use the following command:
+
+`./ExtractDefine -c ExtractDefine.yaml >result.txt`
 
 ## Compile
 
@@ -87,6 +104,23 @@ For full platform compilation, refer to [build.bat](build.bat) .
 - 示例配置文件见: [ExtractDefine.example.yaml](ExtractDefine.example.yaml)
 - 语言文本文件: `(可执行文件名).i18n.ini`
 
+### `CMakeLists.txt` 中的变量
+
+如果遇到使用 `${}` 定义的变量，将试图从已收集的宏定义中查找，如果没有，则：
+
+#### 变量的默认值
+
+解析时会提供 `EXTRACTDEFINE` 变量，用于区分在使用本工具。
+
+- 如果没有指定 `CMAKE_C_FLAGS`,
+  - 将采用默认值: 空字符串。
+- 如果没有指定 `CMAKE_SOURCE_DIR`, `CMAKE_CURRENT_LIST_DIR`, `ROOT_DIR`, `__root_dir`,
+  - 将采用默认值: 根 `CMakeLists.txt` 所在的文件夹路径。
+- 如果没有指定 `CMAKE_CURRENT_SOURCE_DIR`, `COMPONENT_DIR`,
+  - 将采用默认值: 当前处理的 `CMakeLists.txt` 所在的文件夹路径。
+
+如果仍然没有找到，则中止处理当前这条配置。
+
 ### 输出
 
 - 日志信息输出到: Stderr
@@ -98,6 +132,10 @@ For full platform compilation, refer to [build.bat](build.bat) .
 假定有配置文件 `ExtractDefine.yaml`, 将运行日志输出到 `run.log`, 将运行结果输出到 `result.txt`, 请使用下面的命令:
 
 `./ExtractDefine -c ExtractDefine.yaml >result.txt 2>run.log`
+
+如果只输出到 `result.txt`, 请使用下面的命令:
+
+`./ExtractDefine -c ExtractDefine.yaml >result.txt`
 
 ## 编译
 

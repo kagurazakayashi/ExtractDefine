@@ -37,7 +37,9 @@ func makeFileVals(cMakeListsConfigs map[string][]string, findKey string) []strin
 // 包含的其他 CMake 指令碼，以及專案中要編譯的原始檔列表。
 func loadCMakeLists(path string) {
 	// 如果 detailed 為 true，則記錄當前正在加載的 CMakeList 檔案路徑。
-	logs.LogC(logLevel, logs.Debug, lang.GetMultilingualText("ProcessFolder")+" CMakeList :", path)
+	logs.LogC(logLevel, logs.Debug, lang.GetMultilingualText("AnalyzeFile")+" CMakeList :", path)
+	autoDefineDic["CMAKE_CURRENT_SOURCE_DIR"] = filepath.Dir(path)
+	autoDefineDic["COMPONENT_DIR"] = autoDefineDic["CMAKE_CURRENT_SOURCE_DIR"]
 	// 讀取 CMakeLists.txt 檔案的內容。
 	data, err := readFile(path)
 	if err != nil || len(data) == 0 {
@@ -65,29 +67,6 @@ func loadCMakeLists(path string) {
 			file = completeFilePath(dir, file)
 			logs.LogC(logLevel, logs.Debug, lang.GetMultilingualText("AnalyzeFile"), i+1, ":", file)
 			loadDefaultsFile(file)
-		}
-	}
-
-	// 處理 EXTRA_COMPONENT_DIRS 配置項。
-	// EXTRA_COMPONENT_DIRS 用於指定額外的元件目錄。
-	var d_EXTRA_COMPONENT_DIRS []string = makeFileVals(cMakeListsConfigs, "EXTRA_COMPONENT_DIRS")
-	if len(d_EXTRA_COMPONENT_DIRS) > 0 {
-		logs.LogC(logLevel, logs.Debug, lang.GetMultilingualText("ProcessItem")+": EXTRA_COMPONENT_DIRS :", path)
-		// 逐一處理每個指定的元件目錄。
-		for _, sub := range d_EXTRA_COMPONENT_DIRS {
-			if sub == "." || sub == ".." {
-				continue
-			}
-			// 補全資料夾路徑並找到該路徑下的所有 CMakeLists.txt 檔案。
-			sub = completeFilePath(dir, sub)
-			var dirList []string = findCMakeLists(sub)
-			if len(dirList) == 0 {
-				continue
-			}
-			// 對每個找到的 CMakeLists.txt 檔案進行遞迴加載。
-			for _, nowDir := range dirList {
-				loadCMakeLists(nowDir)
-			}
 		}
 	}
 
@@ -126,16 +105,38 @@ func loadCMakeLists(path string) {
 		// 逐一處理每個 .c 檔案。
 		for i, sub := range d_srcs {
 			sub = strings.TrimSpace(sub)
-			sub = completeFilePath(dir, sub)
 			if strings.HasSuffix(sub, ".c") {
 				repOK, repVal := replacePlaceholders(sub)
 				if !repOK {
 					logs.LogC(logLevel, logs.Warning, "srcs:", lang.GetMultilingualText("NoVarInter"), i+1, ":", sub)
 					continue
 				}
-				sub = repVal
+				sub = completeFilePath(dir, repVal)
 				logs.LogC(logLevel, logs.Debug, "srcs:", lang.GetMultilingualText("AnalyzeFile"), i+1, ":", sub)
 				loadHCFile(sub)
+			}
+		}
+	}
+
+	// 處理 EXTRA_COMPONENT_DIRS 配置項。
+	// EXTRA_COMPONENT_DIRS 用於指定額外的元件目錄。
+	var d_EXTRA_COMPONENT_DIRS []string = makeFileVals(cMakeListsConfigs, "EXTRA_COMPONENT_DIRS")
+	if len(d_EXTRA_COMPONENT_DIRS) > 0 {
+		logs.LogC(logLevel, logs.Debug, lang.GetMultilingualText("ProcessItem")+": EXTRA_COMPONENT_DIRS :", path)
+		// 逐一處理每個指定的元件目錄。
+		for _, sub := range d_EXTRA_COMPONENT_DIRS {
+			if sub == "." || sub == ".." {
+				continue
+			}
+			// 補全資料夾路徑並找到該路徑下的所有 CMakeLists.txt 檔案。
+			sub = completeFilePath(dir, sub)
+			var dirList []string = findCMakeLists(sub)
+			if len(dirList) == 0 {
+				continue
+			}
+			// 對每個找到的 CMakeLists.txt 檔案進行遞迴加載。
+			for _, nowDir := range dirList {
+				loadCMakeLists(nowDir)
 			}
 		}
 	}

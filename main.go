@@ -85,6 +85,11 @@ func main() {
 
 	// 取得 CMakeLists.txt 文件所在的資料夾路徑
 	cMakeListsDir = filepath.Dir(cMakeListsPath)
+	autoDefineDic["CMAKE_C_FLAGS"] = ""
+	autoDefineDic["CMAKE_SOURCE_DIR"] = cMakeListsDir
+	autoDefineDic["CMAKE_CURRENT_LIST_DIR"] = cMakeListsDir
+	autoDefineDic["ROOT_DIR"] = cMakeListsDir
+	autoDefineDic["__root_dir"] = cMakeListsDir
 	// 日誌輸出工程文件夾路徑
 	logs.LogC(logLevel, logs.Debug, lang.GetMultilingualText("Folder"), ":", cMakeListsDir)
 

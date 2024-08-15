@@ -4,17 +4,17 @@ import (
 	"os"
 	"path/filepath"
 
-	log "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 	logs "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 	"gopkg.in/yaml.v2"
 )
 
 // yaml 配置檔案中的內容
 type Config struct {
-	ExtractDefine int      `yaml:"ExtractDefine"` // 配置檔案屬於哪個軟體及版本號
-	CMakeList     string   `yaml:"CMakeList"`     // 入口 CMakeLists.txt 檔案路徑
-	LogLevel      int      `yaml:"LogLevel"`      // 執行過程中是否輸出詳細過程
-	Filter        []string `yaml:"Filter"`        // 只需要這些宏的資訊
+	ExtractDefine int               `yaml:"ExtractDefine"` // 配置檔案屬於哪個軟體及版本號
+	CMakeList     string            `yaml:"CMakeList"`     // 入口 CMakeLists.txt 檔案路徑
+	LogLevel      int               `yaml:"LogLevel"`      // 執行過程中是否輸出詳細過程
+	Filter        []string          `yaml:"Filter"`        // 只需要這些宏的資訊
+	DefaultDefine map[string]string `yaml:"DefaultDefine"` // 指定一些宏
 }
 
 // loadConfigFile 讀取並加載配置文件
@@ -30,7 +30,7 @@ func loadConfigFile() (Config, error) {
 		configFile, err = filepath.Abs(configFile)
 		if err != nil {
 			// 如果無法取得絕對路徑，記錄錯誤並返回
-			logs.LogC(logLevel, log.Clash, "无法读取配置文件:", err)
+			logs.LogC(logLevel, logs.Clash, "无法读取配置文件:", err)
 			return config, err
 		}
 
@@ -41,7 +41,7 @@ func loadConfigFile() (Config, error) {
 			cfg, err := os.ReadFile(configFile)
 			if err != nil {
 				// 如果讀取文件失敗，記錄錯誤並返回
-				logs.LogC(logLevel, log.Clash, "无法读取配置文件:", err)
+				logs.LogC(logLevel, logs.Clash, "无法读取配置文件:", err)
 				return config, err
 			}
 
@@ -49,7 +49,7 @@ func loadConfigFile() (Config, error) {
 			err = yaml.Unmarshal(cfg, &config)
 			if err != nil {
 				// 如果解析 YAML 失敗，記錄錯誤並返回
-				logs.LogC(logLevel, log.Clash, "解析 YAML 文件失败:", err)
+				logs.LogC(logLevel, logs.Clash, "解析 YAML 文件失败:", err)
 				return config, err
 			}
 
@@ -57,7 +57,7 @@ func loadConfigFile() (Config, error) {
 			return config, nil
 		} else {
 			// 如果配置文件不存在，記錄錯誤並返回
-			logs.LogC(logLevel, log.Clash, "配置文件路径不正确:", configFile)
+			logs.LogC(logLevel, logs.Clash, "配置文件路径不正确:", configFile)
 			return config, err
 		}
 	}
@@ -72,7 +72,7 @@ func loadConfigFile() (Config, error) {
 func loadConfig(config Config) {
 	// 檢查 ExtractDefine 是否等於 1，若否則記錄錯誤訊息並返回
 	if config.ExtractDefine != 1 {
-		logs.LogC(logLevel, log.Clash, "配置文件版本", config.ExtractDefine, "不正确。")
+		logs.LogC(logLevel, logs.Clash, "配置文件版本", config.ExtractDefine, "不正确。")
 		return
 	}
 
@@ -80,4 +80,7 @@ func loadConfig(config Config) {
 	cMakeListsPath = config.CMakeList         // 設定 CMakeList 的路徑
 	logLevel = logs.LogLevel(config.LogLevel) // 設定詳細模式
 	filter = config.Filter                    // 設定過濾器
+	for k, v := range config.DefaultDefine {
+		macroDic[k] = v
+	}
 }

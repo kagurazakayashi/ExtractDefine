@@ -26,9 +26,10 @@ Recognizable keywords:
 - `-c`: Specify a configuration file (.yaml format, will override command line parameters).
 
 - `-i`: Specify a CMakeLists.txt file, and start searching for macro definitions from here.
-- `-d`: log display level: `0`=debug, `1`=info, `2`=success, `3`=warning, `4`=error, `5`=failure, `6`=no log output
-- `-f`: only need information of these macros (separated by ,)
-- `-h`: show command help
+- `-d`: Log display level: `0`=debug, `1`=info, `2`=success, `3`=warning, `4`=error, `5`=failure, `6`=no log output
+- `-f`: Only need information of these macros (separated by ,)
+- `-e`: Pre-set these macros at the beginning of the run (format as key=value and separated by , )
+- `-h`: Show command help
 
 ### Configuration file
 
@@ -97,6 +98,7 @@ For full platform compilation, refer to [build.bat](build.bat) .
 - `-i`: 指定一个 CMakeLists.txt 文件，将从这里开始搜索宏定义。
 - `-d`: 日志显示级别: `0`=调试, `1`=信息, `2`=成功, `3`=警告, `4`=错误, `5`=失败, `6`=不输出日志
 - `-f`: 只需要这些宏的信息(用 , 分隔)
+- `-e`: 在运行开始时预置这些宏(格式为 键=值 并用 , 分隔)
 - `-h`: 显示命令帮助
 
 ### 配置文件

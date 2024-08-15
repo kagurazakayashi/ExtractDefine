@@ -14,12 +14,13 @@ import (
 )
 
 var (
-	cMakeListsPath string
-	cMakeListsDir  string
-	configFile     string
-	filter         []string
-	filterStr      string
-	logLevel       logs.LogLevel
+	cMakeListsPath   string
+	cMakeListsDir    string
+	configFile       string
+	filter           []string
+	filterStr        string
+	defaultDefineStr string
+	logLevel         logs.LogLevel
 )
 
 func main() {
@@ -46,6 +47,9 @@ func main() {
 	flag.IntVar(&iLogLevel, "d", 0, lang.GetMultilingualText("c_iLogLevel"))
 	// -f 參數：只需要這些宏的資訊。
 	flag.StringVar(&filterStr, "f", "", lang.GetMultilingualText("c_filterStr"))
+	// -e 參數：指定一些宏。
+	flag.StringVar(&defaultDefineStr, "e", "", lang.GetMultilingualText("c_defaultDefine"))
+
 	var cLang string
 	flag.StringVar(&cLang, "l", exePath, "Language (defined in "+exePath+" )")
 
@@ -61,6 +65,14 @@ func main() {
 	logLevel = logs.LogLevel(iLogLevel)
 	if len(filterStr) > 0 {
 		filter = strings.Split(filterStr, ",")
+	}
+	if len(defaultDefineStr) > 0 {
+		for _, v := range strings.Split(defaultDefineStr, ",") {
+			kv := strings.Split(v, "=")
+			if len(kv) == 2 {
+				macroDic[kv[0]] = kv[1]
+			}
+		}
 	}
 
 	// 載入配置文件

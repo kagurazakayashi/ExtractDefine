@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	lang "github.com/kagurazakayashi/libNyaruko_Go/nyai18n"
-	log "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 	logs "github.com/kagurazakayashi/libNyaruko_Go/nyalog"
 )
 
@@ -44,7 +43,7 @@ func loadCMakeLists(path string) {
 	data, err := readFile(path)
 	if err != nil || len(data) == 0 {
 		// 如果讀取失敗，記錄錯誤並返回。
-		logs.LogC(logLevel, log.Clash, lang.GetMultilingualText("Error")+":"+lang.GetMultilingualText("UnableFile"), err)
+		logs.LogC(logLevel, logs.Clash, lang.GetMultilingualText("Error")+":"+lang.GetMultilingualText("UnableFile"), err)
 		return
 	}
 

@@ -11,7 +11,7 @@ import (
 // yaml 配置檔案中的內容
 type Config struct {
 	ExtractDefine int               `yaml:"ExtractDefine"` // 配置檔案屬於哪個軟體及版本號
-	CMakeList     string            `yaml:"CMakeList"`     // 入口 CMakeLists.txt 檔案路徑
+	StartFile     string            `yaml:"StartFile"`     // 入口 CMakeLists.txt 檔案路徑
 	LogLevel      int               `yaml:"LogLevel"`      // 執行過程中是否輸出詳細過程
 	Filter        []string          `yaml:"Filter"`        // 只需要這些宏的資訊
 	DefaultDefine map[string]string `yaml:"DefaultDefine"` // 指定一些宏
@@ -77,7 +77,7 @@ func loadConfig(config Config) {
 	}
 
 	// 將設定值指派給全域變數
-	cMakeListsPath = config.CMakeList         // 設定 CMakeList 的路徑
+	cMakeListsPath = config.StartFile         // 設定 CMakeList 的路徑
 	logLevel = logs.LogLevel(config.LogLevel) // 設定詳細模式
 	filter = config.Filter                    // 設定過濾器
 	for k, v := range config.DefaultDefine {
